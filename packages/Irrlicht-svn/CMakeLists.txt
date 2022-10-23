@@ -4,18 +4,12 @@ project(Project)
 
 include(ExternalProject)
 
-#list(APPEND EP_ARGS SVN_REPOSITORY https://svn.code.sf.net/p/irrlicht/code/trunk)
-#list(APPEND EP_ARGS SVN_TRUST_CERT 1)
-#list(APPEND EP_ARGS DOWNLOAD_DIR ${CACHE_DIR})
+set(SOURCE_DIR ${CACHE_DIR}/Irrlicht-r6438)
 
-if(EXISTS ${CACHE_DIR}/irrlicht-code-r6438-trunk.zip)
-	list(APPEND EP_ARGS URL ${CACHE_DIR}/irrlicht-code-r6438-trunk.zip)
-else()
-	list(APPEND EP_ARGS URL https://sourceforge.net/code-snapshots/svn/i/ir/irrlicht/code/irrlicht-code-r6438-trunk.zip)
-	list(APPEND EP_ARGS DOWNLOAD_DIR ${CACHE_DIR})
-endif()
-
-list(APPEND EP_ARGS SOURCE_DIR ${CACHE_DIR}/irrlicht-code-r6438-trunk)
+list(APPEND EP_ARGS SVN_REPOSITORY https://svn.code.sf.net/p/irrlicht/code/trunk)
+list(APPEND EP_ARGS SVN_TRUST_CERT 1)
+list(APPEND EP_ARGS SVN_REVISION -r6438)
+list(APPEND EP_ARGS SOURCE_DIR ${SOURCE_DIR})
 
 if (MSVC)
 	if(${MSVC_VERSION} EQUAL 1600)
@@ -36,7 +30,6 @@ if (MSVC)
 		message(FATAL_ERROR "unsupported version")
 	endif()
 	
-	#if size of void p
 	if (${CMAKE_SIZEOF_VOID_P} EQUAL 4)
 		list(APPEND BIN_FILES <SOURCE_DIR>/bin/Win32-VisualStudio/Irrlicht.dll)
 		list(APPEND LIB_FILES <SOURCE_DIR>/lib/Win32-VisualStudio/Irrlicht.lib)
