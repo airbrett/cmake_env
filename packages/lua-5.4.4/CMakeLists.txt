@@ -21,6 +21,8 @@ FetchContent_Declare(lua_content
 
 FetchContent_MakeAvailable(lua_content)
 
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 list(APPEND PUBLIC_HEADERS ${SOURCE_DIR}/src/lua.h)
 list(APPEND PUBLIC_HEADERS ${SOURCE_DIR}/src/luaconf.h)
 list(APPEND PUBLIC_HEADERS ${SOURCE_DIR}/src/lualib.h)
@@ -86,10 +88,26 @@ add_library(lua54
 	${PUBLIC_HEADERS}
 )
 
+if(${BUILD_SHARED_LIBS})
+	list(APPEND DEFS PUBLIC LUA_BUILD_AS_DLL)
+endif()
+
 set_target_properties(lua54 PROPERTIES PUBLIC_HEADER "${PUBLIC_HEADERS}")
+
+if(DEFS)
+	target_compile_definitions(lua54
+		${DEFS}
+	)
+endif()
+
+install(TARGETS lua54 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS lua54 RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS lua54 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 add_executable(lua
 	${SOURCE_DIR}/src/lua.c
+	${SOURCE_DIR}/src/lmem.c
+	${SOURCE_DIR}/src/lmem.h
 )
 
 target_link_libraries(lua
@@ -104,8 +122,6 @@ target_link_libraries(luac
 	PRIVATE lua54
 )
 
-install(TARGETS lua54 LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install(TARGETS lua54 PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(TARGETS lua RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 install(TARGETS luac RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
