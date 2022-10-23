@@ -97,3 +97,11 @@ ExternalProject_Add(boost
 	BUILD_IN_SOURCE 1
 	INSTALL_COMMAND ""
 )
+
+if (MSVC)
+	add_custom_command(TARGET boost
+		POST_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_INSTALL_PREFIX}/lib/boost_system.dll ${CMAKE_INSTALL_PREFIX}/bin/boost_system.dll
+		COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_INSTALL_PREFIX}/lib/boost_system.dll
+	)
+endif()
