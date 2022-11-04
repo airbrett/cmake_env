@@ -14,6 +14,7 @@ list(APPEND EP_ARGS SOURCE_DIR ${SOURCE_DIR})
 
 FetchContent_Declare(content
 	PATCH_COMMAND ${CMAKE_COMMAND} -E rm -f "${SOURCE_DIR}/CMakeLists.txt"
+	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/IrrAssimpImport.cpp" <SOURCE_DIR>/IrrAssimp/IrrAssimpImport.cpp
 	${EP_ARGS}
 )
 
