@@ -14,6 +14,7 @@ FetchContent_Declare(content
 	PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/text_display.cc" ${SOURCE_DIR}/src/text_display.cc
 	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/utils.cc" ${SOURCE_DIR}/src/utils.cc
 	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/tree.h" ${SOURCE_DIR}/src/tree.h
+	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/open.c" ${SOURCE_DIR}/src/open.c
 	${EP_ARGS}
 )
 
