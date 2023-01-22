@@ -51,15 +51,17 @@ function (Main)
 		file(TOUCH "${DEV_ROOT}/${Line}")
 	endforeach()
 	
-	set(BUILD_DIR ${DEV_ROOT}/Release)
-	ConfigureProject(Release ${BUILD_DIR} ${DEV_ROOT}/Release/dev_root)
-	
-	GetGenerator(${BUILD_DIR} Generator)
-	GeneratorIsMulti(${Generator} IsMulti)
-	
-	if (IsMulti)
-		set(BUILD_DIR ${DEV_ROOT}/Debug)
-		ConfigureProject(Debug ${BUILD_DIR} ${DEV_ROOT}/Debug/dev_root)
+	if (EXISTS CMakeLists.txt)
+		set(BUILD_DIR ${DEV_ROOT}/Release)
+		ConfigureProject(Release ${BUILD_DIR} ${DEV_ROOT}/Release/dev_root)
+		
+		GetGenerator(${BUILD_DIR} Generator)
+		GeneratorIsMulti(${Generator} IsMulti)
+		
+		if (IsMulti)
+			set(BUILD_DIR ${DEV_ROOT}/Debug)
+			ConfigureProject(Debug ${BUILD_DIR} ${DEV_ROOT}/Debug/dev_root)
+		endif()
 	endif()
 	
 	#file(REMOVE_RECURSE ${TEMP_DIR})
