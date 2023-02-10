@@ -1,0 +1,26 @@
+find_package(Lua REQUIRED)
+
+if("${LUA_VERSION_STRING}" VERSION_LESS "5.2.0")
+	message(FATAL_ERROR "Lua 5.2.0 or later is required, but found ${LUA_VERSION_STRING}.")
+endif()
+
+if(UNIX AND NOT APPLE)
+	find_library(DL_LIBRARY dl)
+	list(APPEND LUA_LIBRARIES ${DL_LIBRARY})
+endif()
+
+include_directories(
+	"${PROJECT_SOURCE_DIR}/include"
+	"${LUA_INCLUDE_DIR}"
+)
+
+add_subdirectory(lib)
+add_subdirectory(bin)
+add_subdirectory(tests)
+
+set_target_properties(libtolua++ PROPERTIES PUBLIC_HEADER "${PROJECT_SOURCE_DIR}/include/tolua++.h")
+
+install(TARGETS libtolua++ LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS libtolua++ PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(TARGETS tolua++_bootstrap RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install(TARGETS tolua++ RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR})
