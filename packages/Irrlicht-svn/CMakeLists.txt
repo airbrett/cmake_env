@@ -31,13 +31,35 @@ if (MSVC)
 	endif()
 	
 	if (${CMAKE_SIZEOF_VOID_P} EQUAL 4)
-		list(APPEND BIN_FILES <SOURCE_DIR>/bin/Win32-VisualStudio/Irrlicht.dll)
-		list(APPEND LIB_FILES <SOURCE_DIR>/lib/Win32-VisualStudio/Irrlicht.lib)
+		set(IRR_BIN_DIR <SOURCE_DIR>/bin/Win32-VisualStudio)
+		set(IRR_LIB_DIR <SOURCE_DIR>/lib/Win32-VisualStudio)
 		set(PLATFORM Win32)
 	else()
-		list(APPEND BIN_FILES <SOURCE_DIR>/bin/Win64-VisualStudio/Irrlicht.dll)
-		list(APPEND LIB_FILES <SOURCE_DIR>/lib/Win64-VisualStudio/Irrlicht.lib)
+		set(IRR_BIN_DIR <SOURCE_DIR>/bin/Win64-VisualStudio)
+		set(IRR_LIB_DIR <SOURCE_DIR>/lib/Win64-VisualStudio)
 		set(PLATFORM x64)
+	endif()
+	
+	if (BUILD_SHARED_LIBS)
+		list(APPEND BIN_FILES ${IRR_BIN_DIR}/Irrlicht.dll)
+		
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(CONFIGURATION "Debug")
+		else()
+			set(CONFIGURATION "Release")
+		endif()
+	else()
+		if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+			set(CONFIGURATION "Static lib - Debug")
+		else()
+			set(CONFIGURATION "Static lib - Release")
+		endif()
+	endif()
+	
+	list(APPEND LIB_FILES ${IRR_LIB_DIR}/Irrlicht.lib)
+	
+	if (BIN_FILES)
+		set(COPY_BIN_FILES_CMD COMMAND ${CMAKE_COMMAND} -E copy ${BIN_FILES} ${CMAKE_INSTALL_PREFIX}/bin)
 	endif()
 	
 	ExternalProject_Add(
@@ -46,15 +68,23 @@ if (MSVC)
 		PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/Irrlicht17.0.vcxproj" <SOURCE_DIR>/source/Irrlicht/Irrlicht17.0.vcxproj
 		COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/IrrCompileConfig.h" <SOURCE_DIR>/include/IrrCompileConfig.h
 		CONFIGURE_COMMAND ""
-		BUILD_COMMAND msbuild.exe <SOURCE_DIR>/source/Irrlicht/${ProjFile} /p:Configuration=${CMAKE_BUILD_TYPE} /p:Platform=${PLATFORM}
+		BUILD_COMMAND msbuild.exe <SOURCE_DIR>/source/Irrlicht/${ProjFile} /p:Configuration=${CONFIGURATION} /p:Platform=${PLATFORM}
 		INSTALL_COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/bin
-		COMMAND ${CMAKE_COMMAND} -E copy ${BIN_FILES} ${CMAKE_INSTALL_PREFIX}/bin
+		${COPY_BIN_FILES_CMD}
+		#COMMAND ${CMAKE_COMMAND} -E copy ${BIN_FILES} ${CMAKE_INSTALL_PREFIX}/bin
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/lib
 		COMMAND ${CMAKE_COMMAND} -E copy ${LIB_FILES} ${CMAKE_INSTALL_PREFIX}/lib
 		COMMAND ${CMAKE_COMMAND} -E copy_directory <SOURCE_DIR>/include ${CMAKE_INSTALL_PREFIX}/include/Irrlicht
 		COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/cmake
-		COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/IrrlichtConfig.cmake ${CMAKE_INSTALL_PREFIX}/cmake
+		#COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/IrrlichtConfig.cmake ${CMAKE_INSTALL_PREFIX}/cmake
 	)
+	
+	configure_file(
+		${CMAKE_CURRENT_LIST_DIR}/IrrlichtConfig.cmake
+		${CMAKE_INSTALL_PREFIX}/cmake/IrrlichtConfig.cmake
+		@ONLY
+	)
+	
 else()
 	message(FATAL_ERROR "not implimented")
 endif()
