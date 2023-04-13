@@ -19,20 +19,7 @@ endif()
 
 get_filename_component(DEV_ROOT ${DEV_ROOT} ABSOLUTE)
 
-set(TEMP_DIR ${DEV_ROOT}/dev_root)
-
-#All arguments following the requirements.cmake file are assumed to be arguments to be passed to cmake when
-#configuring & building
-unset(EXTERNAL_ARGS)
-math(EXPR ARGS_MAX "${CMAKE_ARGC} - 1")
-
-if (${CMAKE_ARGC} GREATER 4)
-	foreach (i RANGE 4 ${ARGS_MAX})
-		list(APPEND EXTERNAL_ARGS ${CMAKE_ARGV${i}})
-	endforeach()
-endif()
-
-
+set(TEMP_DIR ${DEV_ROOT}/artifacts)
 
 function (Main)
 	#file(REMOVE_RECURSE ${TEMP_DIR})
@@ -41,6 +28,8 @@ function (Main)
 	file(STRINGS "${CMAKE_ARGV3}" Lines)
 	
 	foreach (Line ${Lines})
+		unset(PackageArgs)
+		
 		#handle comments
 		string(FIND "${Line}" "#" Pos)
 		
@@ -52,27 +41,43 @@ function (Main)
 		string(STRIP "${Line}" Line)
 		
 		if (Len GREATER 0)
-			if (EXISTS "${DEV_ROOT}/${Line}")
-				message("${Line} already built")
+			#look for package build flags
+			string(FIND "${Line}" "," Pos)
+			
+			if (NOT Pos EQUAL -1)
+				string(SUBSTRING "${Line}" 0 ${Pos} PackageName)
+				string(STRIP "${PackageName}" PackageName)
+				
+				math(EXPR Pos "${Pos} + 1")
+				
+				string(SUBSTRING "${Line}" ${Pos} -1 PackageFlags)
+				string(STRIP "${PackageFlags}" PackageFlags)
 			else()
-				message("Building ${Line}")
-				BuildAndInstallPackage(${Line})
+				set(PackageName ${Line})
 			endif()
 			
-			file(TOUCH "${DEV_ROOT}/${Line}")
+			#build if not already built
+			if (EXISTS "${DEV_ROOT}/${PackageName}")
+				message("${PackageName} already built")
+			else()
+				message("Building ${PackageName}")
+				BuildAndInstallPackage(${PackageName})
+			endif()
+			
+			file(TOUCH "${DEV_ROOT}/${PackageName}")
 		endif()
 	endforeach()
 	
 	if (EXISTS CMakeLists.txt)
 		set(BUILD_DIR ${DEV_ROOT}/Release)
-		ConfigureProject(Release ${BUILD_DIR} ${DEV_ROOT}/Release/dev_root)
+		ConfigureProject(Release ${BUILD_DIR} ${DEV_ROOT}/Release/artifacts)
 		
 		GetGenerator(${BUILD_DIR} Generator)
 		GeneratorIsMulti(${Generator} IsMulti)
 		
 		if (IsMulti)
 			set(BUILD_DIR ${DEV_ROOT}/Debug)
-			ConfigureProject(Debug ${BUILD_DIR} ${DEV_ROOT}/Debug/dev_root)
+			ConfigureProject(Debug ${BUILD_DIR} ${DEV_ROOT}/Debug/artifacts)
 		endif()
 	endif()
 	
@@ -80,8 +85,8 @@ function (Main)
 endfunction()
 
 function (BuildAndInstallPackage Package)
-	set(BUILD_DIR ${DEV_ROOT}/Release/dev_root_build/${Package})
-	ConfigurePackage(Release ${BUILD_DIR} ${DEV_ROOT}/Release/dev_root)
+	set(BUILD_DIR ${DEV_ROOT}/Release/artifacts_cmake/${Package})
+	ConfigurePackage(Release ${BUILD_DIR} ${DEV_ROOT}/Release/artifacts)
 	BuildPackage(Release ${BUILD_DIR})
 	InstallPackage(Release ${BUILD_DIR})
 	
@@ -89,8 +94,8 @@ function (BuildAndInstallPackage Package)
 	GeneratorIsMulti(${Generator} IsMulti)
 	
 	if (IsMulti)
-		set(BUILD_DIR ${DEV_ROOT}/Debug/dev_root_build/${Package})
-		ConfigurePackage(Debug ${BUILD_DIR} ${DEV_ROOT}/Debug/dev_root)
+		set(BUILD_DIR ${DEV_ROOT}/Debug/artifacts_cmake/${Package})
+		ConfigurePackage(Debug ${BUILD_DIR} ${DEV_ROOT}/Debug/artifacts)
 		BuildPackage(Debug ${BUILD_DIR})
 		InstallPackage(Debug ${BUILD_DIR})
 	endif()
@@ -100,10 +105,10 @@ function (ConfigureProject BuildType BuildDir InstallDir)
 	file(MAKE_DIRECTORY ${BuildDir})
 	
 	execute_process(
-		COMMAND ${CMAKE_COMMAND} ${EXTERNAL_ARGS} -DCMAKE_BUILD_TYPE=${BuildType} -DCMAKE_INSTALL_PREFIX=${InstallDir} ../..
+		COMMAND ${CMAKE_COMMAND} -DCMAKE_BUILD_TYPE=${BuildType} -DCMAKE_INSTALL_PREFIX=${InstallDir} ../..
 		WORKING_DIRECTORY ${BuildDir}
 		COMMAND_ERROR_IS_FATAL ANY
-		#COMMAND_ECHO STDOUT 
+		COMMAND_ECHO STDOUT 
 	)
 endfunction()
 
@@ -111,7 +116,7 @@ function (ConfigurePackage BuildType BuildDir InstallDir)
 	file(MAKE_DIRECTORY ${BuildDir})
 	
 	execute_process(
-		COMMAND ${CMAKE_COMMAND} ${EXTERNAL_ARGS} -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=${BuildType} -DCMAKE_INSTALL_PREFIX=${InstallDir} -DCACHE_DIR=${CACHE_DIR} -DPACKAGE_DIR=${PACKAGES_DIR} ${PACKAGES_DIR}/${Package}
+		COMMAND ${CMAKE_COMMAND} ${PackageFlags} -DCMAKE_BUILD_TYPE=${BuildType} -DCMAKE_INSTALL_PREFIX=${InstallDir} -DCACHE_DIR=${CACHE_DIR} -DPACKAGE_DIR=${PACKAGES_DIR} ${PACKAGES_DIR}/${Package}
 		WORKING_DIRECTORY ${BuildDir}
 		COMMAND_ERROR_IS_FATAL ANY
 		#COMMAND_ECHO STDOUT 

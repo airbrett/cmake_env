@@ -23,10 +23,6 @@ FetchContent_Declare(Chipmunk
 	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/patch_CMakeLists.txt" "${SOURCE_DIR}/CMakeLists.txt"
 )
 
-set(BUILD_DEMOS OFF CACHE BOOL "" FORCE)
-set(BUILD_STATIC OFF CACHE BOOL "" FORCE)
-set(INSTALL_STATIC OFF CACHE BOOL "" FORCE)
-
 FetchContent_MakeAvailable(Chipmunk)
 
 configure_file(
