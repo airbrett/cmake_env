@@ -41,14 +41,26 @@ function (Main)
 	file(STRINGS "${CMAKE_ARGV3}" Lines)
 	
 	foreach (Line ${Lines})
-		if (EXISTS "${DEV_ROOT}/${Line}")
-			message("${Line} already built")
-		else()
-			message("Building ${Line}")
-			BuildAndInstallPackage(${Line})
+		#handle comments
+		string(FIND "${Line}" "#" Pos)
+		
+		if (NOT Pos EQUAL -1)
+			string(SUBSTRING "${Line}" 0 ${Pos} Line)
 		endif()
 		
-		file(TOUCH "${DEV_ROOT}/${Line}")
+		string(LENGTH "${Line}" Len)
+		string(STRIP "${Line}" Line)
+		
+		if (Len GREATER 0)
+			if (EXISTS "${DEV_ROOT}/${Line}")
+				message("${Line} already built")
+			else()
+				message("Building ${Line}")
+				BuildAndInstallPackage(${Line})
+			endif()
+			
+			file(TOUCH "${DEV_ROOT}/${Line}")
+		endif()
 	endforeach()
 	
 	if (EXISTS CMakeLists.txt)
