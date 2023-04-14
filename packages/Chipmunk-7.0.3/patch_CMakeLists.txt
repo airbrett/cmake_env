@@ -4,6 +4,13 @@ project(chipmunk)
 
 add_definitions(-DCHIPMUNK_BUILD)
 
+if(INSTALL_STATIC)
+	add_definitions(-DCHIPMUNK_SHARED=0)
+else()
+	add_definitions(-DCHIPMUNK_SHARED=1)
+endif()
+
+
 # to change the prefix, run cmake with the parameter:
 #   -D CMAKE_INSTALL_PREFIX=/my/prefix
 

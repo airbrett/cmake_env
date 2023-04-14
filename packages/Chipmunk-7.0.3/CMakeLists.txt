@@ -19,13 +19,25 @@ FetchContent_Declare(Chipmunk
 	${EP_ARGS}
 	PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/cpRobust.h" "${SOURCE_DIR}/include/chipmunk/cpRobust.h"
 	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/cpRobust.c" "${SOURCE_DIR}/src/cpRobust.c"
-	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/chipmunk.h" "${SOURCE_DIR}/include/chipmunk/chipmunk.h"
 	COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/patch_CMakeLists.txt" "${SOURCE_DIR}/CMakeLists.txt"
 )
 
 FetchContent_MakeAvailable(Chipmunk)
 
+if (INSTALL_STATIC)
+	set(CHIPMUNK_SHARED 0)
+else()
+	set(CHIPMUNK_SHARED 1)
+endif()
+
+configure_file(
+	${CMAKE_CURRENT_LIST_DIR}/chipmunk.h
+	${SOURCE_DIR}/include/chipmunk/chipmunk.h
+	@ONLY
+)
+
 configure_file(
 	${CMAKE_CURRENT_LIST_DIR}/chipmunkConfig.cmake
 	${CMAKE_INSTALL_PREFIX}/cmake/chipmunkConfig.cmake
+	@ONLY
 )
