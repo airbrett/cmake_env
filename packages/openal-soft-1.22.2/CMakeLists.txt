@@ -18,6 +18,7 @@ list(APPEND EP_ARGS SOURCE_DIR ${SOURCE_DIR})
 
 FetchContent_Declare(content
 	${EP_ARGS}
+	PATCH_COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_LIST_DIR}/CMakeLists_patch.txt" "${SOURCE_DIR}/CMakeLists.txt"
 )
 
 FetchContent_MakeAvailable(content)
